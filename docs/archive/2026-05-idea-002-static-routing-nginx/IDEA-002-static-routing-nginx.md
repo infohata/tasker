@@ -1,7 +1,7 @@
 ---
 id: 002
 title: Static & Media Serving via nginx
-status: idea          # idea | in-progress | complete | superseded
+status: in-progress   # idea | in-progress | complete | superseded
 priority: medium   # high | medium | low
 supersedes: []       # list of IDEA ids this replaces, or []
 superseded_by: null
@@ -20,7 +20,7 @@ sensitive_paths_cleared_reason: "nginx/default.conf and compose.yml volume topol
 
 # IDEA-002: Static & Media Serving via nginx
 
-**Status**: 💡 Idea
+**Status**: 🚧 In Progress
 **Priority**: Medium
 
 **Problem** (or opportunity): IDEA-001 landed Daphne behind nginx with everything proxied to `web:8000`. `collectstatic` works and writes 127 files into `static_collected/`, but `GET /static/...` returns **404** because:

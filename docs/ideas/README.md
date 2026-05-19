@@ -5,7 +5,7 @@ _Two locations per RULE_ideas-location-status: `docs/ideas/` = backlog;
 
 ## 🚧 In Progress
 
-_(none)_
+- [IDEA-002](../archive/2026-05-idea-002-static-routing-nginx/IDEA-002-static-routing-nginx.md) ⏳ — Static & Media Serving via nginx
 
 ## 💡 High Priority (backlog)
 
@@ -13,7 +13,7 @@ _(none)_
 
 ## 💡 Medium Priority (backlog)
 
-- [IDEA-002](IDEA-002-static-routing-nginx.md) — Static & Media Serving via nginx
+_(none)_
 
 ## 💡 Low Priority (backlog)
 
