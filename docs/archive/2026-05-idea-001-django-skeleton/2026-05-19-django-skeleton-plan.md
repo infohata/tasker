@@ -3,7 +3,7 @@ stage: plan
 slug: django-skeleton
 created: 2026-05-19
 source: ./IDEA-001-django-skeleton.md
-status: ready
+status: shipped
 project: tasker
 ---
 
@@ -225,4 +225,19 @@ Skipping for now — scope is medium-bordering-small (one application surface, n
 
 ---
 
-**Status:** ready — user accepted defaults on Q1/Q3/Q4 (Channels deferred, `tasker_django.health` permanent, `postgres:16` major-pin); Q2 resolved to host port `80` for prod parity. `/work` execution starting from step 2 (step 1 already shipped in commits `4ea1de9` + `58c6085` + `354bc57`).
+**Status:** shipped — all 8 execution steps landed, all R1–R10 verified, PR #1 ready for review. Commits: `4ea1de9` (plan) → `58c6085` (rename) → `354bc57` (Q2) → `67a881a` (ready) → `db690b4` (docker) → `10145d7` (compose) → `c1d5c26` (django) → `4df8770` (health) → `af40000` (test) → `f0332a4` (make) → `ed333f1` (claude) → `f13360b` (env-template fix).
+
+### Verification results (run 2026-05-19)
+
+- ✅ `cp .env.template .env` + populated SECRET_KEY (`$`-free) + 16-char POSTGRES_PASSWORD.
+- ✅ `make up` — all 4 containers healthy (db, redis, web, nginx); no `$`-interpolation warnings after the .env.template hygiene fix.
+- ✅ `make migrate` — 18 built-in migrations applied (contenttypes/auth/admin/sessions), exit 0.
+- ✅ `make test` — 2/2 passed (pytest-django 4.12, Django 5.2.14).
+- ✅ `curl http://localhost/health/` — `{"status": "ok"}` with HTTP 200 (nginx → web hop validated).
+- ✅ `make self-sweep` — pyflakes clean on `tasker_django` + `tasker`.
+
+### Deviations from the original plan
+
+- **.env.template refactored mid-verification** (added as `f13360b`). Original template had `DATABASE_URL` and `POSTGRES_*` as parallel knobs, which broke on first run because updating one without the other caused postgres↔django password mismatch. Fix: drop `DATABASE_URL` from `.env.template`; `compose.yml` interpolates it into the web container's environment from `POSTGRES_*`. Single source of truth.
+- **`.env` $-escape gotcha documented** at the top of `.env.template`. Compose interpolates `$VAR` references inside `.env` values; literal `$` must be `$$`. Surfaced when a generated secret containing `$x` was silently corrupted on first run.
+
