@@ -3,6 +3,11 @@ services:
     build: .
     command: daphne -b 0.0.0.0 -p 8000 tasker.asgi:application
     env_file: .env
+    environment:
+      # Single source of truth for DB credentials lives in POSTGRES_* below.
+      # Compose interpolates them into DATABASE_URL here so Django sees one
+      # connection string while .env only carries the components.
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     volumes:
       - .:/app
     depends_on:
