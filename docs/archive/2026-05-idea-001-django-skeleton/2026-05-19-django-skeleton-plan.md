@@ -19,7 +19,7 @@ This is also the first end-to-end exercise of the mind-vault sprint workflow aga
 
 - No `compose.yml`, no `Dockerfile`, no Django project package, no Makefile, no test config. Nothing to run.
 - Without a runnable stack, `/work` has no validation surface — every later IDEA's verification step would have to scaffold the stack first.
-- The chosen conventions (Daphne-only, nginx mirroring prod, `apps/` package layout, env via django-environ) need to land once, deliberately, before anyone has to relitigate them mid-feature.
+- The chosen conventions (Daphne-only, nginx mirroring prod, `tasker_django/` apps-container layout, env via django-environ) need to land once, deliberately, before anyone has to relitigate them mid-feature.
 
 ## Requirements Trace
 
@@ -29,7 +29,7 @@ This is also the first end-to-end exercise of the mind-vault sprint workflow aga
 - **R4.** Makefile exposes: `up`, `down`, `shell`, `test`, `migrate`, `makemigrations`, `logs`. Source: seed `CLAUDE.md` Commands section.
 - **R5.** `.env.template` enumerates every required env var; the real `.env` is gitignored and never read by Claude in the primary tree. Source: global CLAUDE.md guardrail.
 - **R6.** Requirements are split: `requirements/base.txt` (runtime) and `requirements/dev.txt` (pytest, pytest-django, pyflakes). Source: IDEA-001 proposal + `RULE_self-sweep-before-push`.
-- **R7.** `apps/` is a Python package (`apps/__init__.py`) so future domain apps register as `apps.projects`, `apps.tasks`, etc. Source: IDEA-001 proposal.
+- **R7.** `tasker_django/` is a Python package (`tasker_django/__init__.py`) so future domain apps register as `tasker_django.projects`, `tasker_django.tasks`, etc. The named-by-project container avoids the generic `apps/` smell (which also visually clashes with Django's internal `django.apps`). Source: IDEA-001 proposal, refined per user direction during /plan review.
 - **R8.** Daphne is the single ASGI server (`daphne tasker.asgi:application`), no Gunicorn fallback. Source: global CLAUDE.md preference.
 - **R9.** Settings driven by environment variables via `django-environ`; no hard-coded secrets. Source: global CLAUDE.md + `.env.template` convention.
 - **R10.** `CLAUDE.md`'s "Commands" + "What lives where" sections flip from "planned" to actual once everything lands. Source: seed `CLAUDE.md` self-instruction.
@@ -43,12 +43,12 @@ This is also the first end-to-end exercise of the mind-vault sprint workflow aga
 - `compose.yml` (services: `web`, `db`, `redis`, `nginx`)
 - `nginx/default.conf` (proxy_pass to `web:8000`)
 - `tasker/` Django project package: `__init__.py`, `settings.py`, `urls.py`, `asgi.py`, `wsgi.py`
-- `apps/__init__.py` (empty package placeholder — no domain apps yet)
-- `apps/health/` — single minimal app exposing `GET /health/` for the smoke test. Lives in `apps/` so the package isn't empty and the layout is exercised by something real.
+- `tasker_django/__init__.py` (empty package placeholder — no domain apps yet)
+- `tasker_django/health/` — single minimal app exposing `GET /health/` for the smoke test. Lives in `tasker_django/` so the package isn't empty and the layout is exercised by something real.
 - `requirements/base.txt`, `requirements/dev.txt`
 - `Makefile`
 - `.env.template`
-- `pytest.ini` + one smoke test under `apps/health/tests/`
+- `pytest.ini` + one smoke test under `tasker_django/health/tests/`
 - `manage.py`
 - `.python-version` pinning to `3.12.7` (pyenv-friendly per CLAUDE.md)
 - Update `CLAUDE.md` Commands + structure sections
@@ -97,7 +97,7 @@ This is also the first end-to-end exercise of the mind-vault sprint workflow aga
 
 - **Python 3.12.7 via pyenv inside `python:3.12-slim`.** Matches CLAUDE.md preference; 3.12 is the production-default for Django 5.2 in mid-2026; `.python-version` keeps host-side venv tooling aligned.
 - **Daphne single-server, no Channels yet.** Daphne happily serves `get_asgi_application()` without Channels. Channels installs when a real WS consumer appears, not before — keeps the dependency surface honest.
-- **`apps/` as a Python package; `apps.health` as the first inhabitant.** Avoids the empty-package smell, exercises the import path (`INSTALLED_APPS = ["apps.health", ...]`), and gives the smoke test a real view to target.
+- **`tasker_django/` as the apps container; `tasker_django.health` as the first inhabitant.** Named-by-project (not generic `apps/`) — keeps the layout readable when grepping or browsing, and dodges visual confusion with Django's internal `django.apps`. Avoids the empty-package smell, exercises the import path (`INSTALLED_APPS = ["tasker_django.health", ...]`), and gives the smoke test a real view to target.
 - **Settings driven by `django-environ`.** Single `tasker/settings.py`, all secrets and connection strings via `env(...)`. Multi-file settings split happens when staging/prod divergence forces it, not pre-emptively.
 - **Postgres 16, Redis 7.** Current LTS-ish lines as of 2026-05; both via official docker images pinned to major versions, not `latest`.
 - **nginx serves the user-facing port; web container exposes only to the internal docker network.** Mirrors prod, surfaces any proxy_pass quirks early. nginx host port is `8080` to avoid colliding with a possibly-installed system nginx on `:80`.
@@ -114,8 +114,8 @@ This is also the first end-to-end exercise of the mind-vault sprint workflow aga
 - **Q2. nginx host port — `8080` or `80`?**
   - **Default:** `8080`. Avoids needing sudo or colliding with host nginx.
   - **Trade-off:** Less faithful to prod (which uses 80/443) but safer for any dev machine.
-- **Q3. `apps.health` — keep as a permanent diagnostic app or absorb the `/health/` view into the project `urls.py` later?**
-  - **Default:** Keep. `/health/` is a legit ops surface (k8s probes, monitoring) and `apps.health` is a natural home for future readiness/liveness expansion.
+- **Q3. `tasker_django.health` — keep as a permanent diagnostic app or absorb the `/health/` view into the project `urls.py` later?**
+  - **Default:** Keep. `/health/` is a legit ops surface (k8s probes, monitoring) and `tasker_django.health` is a natural home for future readiness/liveness expansion.
   - **Trade-off:** Slight ceremony for a one-view app, but the alternative (a view in `tasker.urls`) blurs the project/apps boundary the layout is trying to establish.
 - **Q4. Pin Postgres to `16` (major) or `16-alpine` / a specific minor?**
   - **Default:** `postgres:16` (major-only). Patch updates land transparently; `alpine` postgres has occasional libc-related surprises.
@@ -128,9 +128,9 @@ Branch `feature/idea-001-django-skeleton` already exists with the kickoff commit
 1. **`docs(plan)`** — emit this plan + the IDEA frontmatter flip + ideas index update. _(This commit.)_
 2. **`chore(docker)`** — `Dockerfile`, `.dockerignore`, `requirements/base.txt`, `requirements/dev.txt`, `.python-version`. Does NOT yet wire compose.
 3. **`chore(compose)`** — `compose.yml` (web/db/redis/nginx), `nginx/default.conf`, `.env.template`. `make up` works after this commit but `web` will error until step 4 lands `manage.py`.
-4. **`feat(django)`** — `tasker/` package (`__init__.py`, `settings.py`, `urls.py`, `asgi.py`, `wsgi.py`) + `manage.py` + `apps/__init__.py`. Django boots; `manage.py check` is green.
-5. **`feat(health)`** — `apps/health/` (apps.py, urls.py, views.py with `health_view` returning `JsonResponse({"status": "ok"})`), wire into `tasker.urls`. `curl http://localhost:8080/health/` returns 200.
-6. **`test(smoke)`** — `pytest.ini`, `apps/health/tests/__init__.py`, `apps/health/tests/test_health.py`. `make test` runs and passes.
+4. **`feat(django)`** — `tasker/` package (`__init__.py`, `settings.py`, `urls.py`, `asgi.py`, `wsgi.py`) + `manage.py` + `tasker_django/__init__.py`. Django boots; `manage.py check` is green.
+5. **`feat(health)`** — `tasker_django/health/` (apps.py, urls.py, views.py with `health_view` returning `JsonResponse({"status": "ok"})`), wire into `tasker.urls`. `curl http://localhost:8080/health/` returns 200.
+6. **`test(smoke)`** — `pytest.ini`, `tasker_django/health/tests/__init__.py`, `tasker_django/health/tests/test_health.py`. `make test` runs and passes.
 7. **`chore(make)`** — `Makefile` with `up`, `down`, `shell`, `test`, `migrate`, `makemigrations`, `logs`. Replaces any raw `docker compose` invocations from earlier commits where applicable in the plan's docs.
 8. **`docs(claude)`** — update `CLAUDE.md` Commands + "What lives where" sections from "planned" to actual; remove the pre-scaffolding status banner.
 9. **PR ready for review** — mark draft PR #1 ready, request review, human merges (RULE_git-safety: PR is the HITL gate).
@@ -158,7 +158,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "apps.health",
+    "tasker_django.health",
 ]
 
 DATABASES = {"default": env.db("DATABASE_URL")}
@@ -215,7 +215,7 @@ After step 8, all of the following must be green:
 - `make migrate` — applies Django built-in migrations against fresh Postgres, exit 0.
 - `make test` — pytest finds and passes the `/health/` smoke test.
 - `curl -s http://localhost:8080/health/` — returns `{"status": "ok"}` with HTTP 200 (exercises the nginx → web hop).
-- `docker compose exec -T web python -m pyflakes apps/ tasker/` — clean (self-sweep gate).
+- `docker compose exec -T web python -m pyflakes tasker_django/ tasker/` — clean (self-sweep gate).
 - `make down` — `docker compose ps` empty, no orphan containers, named volume preserved.
 - `git log --oneline feature/idea-001-django-skeleton ^main` shows the commit sequence from step 1–8.
 

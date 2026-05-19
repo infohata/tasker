@@ -57,7 +57,7 @@ Run a single test (planned): `docker compose exec -T web pytest path/to/test_fil
 - `compose.yml` / `Dockerfile` — container definitions
 - `Makefile` — developer shortcuts
 - `tasker/` — Django project package (settings, urls, asgi)
-- `apps/` — domain apps (projects, tasks, users)
+- `tasker_django/` — apps container (named-by-project, not generic `apps/`); future domain apps register as `tasker_django.projects`, `tasker_django.tasks`, etc.
 - `docs/ideas/`, `docs/archive/` — mind-vault artefacts
 - `.env.template` — env var contract; real `.env` is gitignored and off-limits to Claude
 

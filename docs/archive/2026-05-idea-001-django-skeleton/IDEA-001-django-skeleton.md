@@ -28,7 +28,7 @@ sensitive_paths_cleared_reason: "Lands docker-compose.yml, nginx config, Dockerf
 **Proposal** (or idea): Stand up the minimum runnable surface defined in the seed `CLAUDE.md`:
 
 - Django 5.2.9 project package (`tasker/`) with `settings`, `urls`, `asgi`
-- `apps/` directory for future domain apps (no apps land in this IDEA)
+- `tasker_django/` directory (project-named apps container, not generic `apps/`) for future domain apps (no domain apps land in this IDEA — only a minimal `tasker_django.health` app to exercise the layout)
 - Docker Compose stack: `web` (Daphne ASGI), `db` (Postgres), `redis`, `nginx` (proxy_pass)
 - `Dockerfile` for the web image (pyenv-friendly Python, Daphne entrypoint)
 - `Makefile` shortcuts: `up`, `down`, `shell`, `test`, `migrate`, `makemigrations`, `logs`
