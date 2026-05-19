@@ -3,7 +3,7 @@ stage: plan
 slug: django-skeleton
 created: 2026-05-19
 source: ./IDEA-001-django-skeleton.md
-status: draft
+status: ready
 project: tasker
 ---
 
@@ -225,4 +225,4 @@ Skipping for now — scope is medium-bordering-small (one application surface, n
 
 ---
 
-**Status:** draft — awaiting user approval on Q1–Q4 (or accept defaults) before `/work` execution.
+**Status:** ready — user accepted defaults on Q1/Q3/Q4 (Channels deferred, `tasker_django.health` permanent, `postgres:16` major-pin); Q2 resolved to host port `80` for prod parity. `/work` execution starting from step 2 (step 1 already shipped in commits `4ea1de9` + `58c6085` + `354bc57`).
