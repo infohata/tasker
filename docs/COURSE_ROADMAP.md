@@ -1,12 +1,18 @@
 # Course Roadmap — Tasker
 
-A living teaching plan for the **tasker** project. Eight guided sessions (~4 hours each) demonstrate the mind-vault sprint workflow against a real Django stack, with Django itself introduced incrementally for students coming from the PHP world (Symfony / Laravel).
+A living teaching plan for the **tasker** project. Nine guided sessions (~4 hours each) demonstrate the mind-vault sprint workflow against a real Django stack, with Django itself introduced incrementally for students coming from the PHP world (Symfony / Laravel).
 
 Each session is one full sprint cycle: **ideate → plan → work → review → wrap → merge**. The mechanics are taught *by doing them*, not by lecture — every step lands a commit students can grep, diff, and replay.
 
 This document is iterated each session: status flips, links to the merged PRs land here, and pacing can shift based on student questions or surprise findings.
 
 ---
+
+## Cohort shape
+
+- Each student maintains **their own fork** of this repo (or their own greenfield repo following the same template). The instructor's repo at `infohata/tasker` is the canonical reference for "what the trajectory looks like when it goes well" — students compare their PR diffs against it for sanity checks, but every student walks the workflow themselves.
+- Sessions are **live, paired, and synchronous**: instructor drives the workflow against the canonical repo; students drive against their own. By the end of each session, every student should have an equivalent PR merged in their own fork.
+- Drift between the canonical repo and a student's fork is **expected and educational** — different open-question resolutions, different /plan reviewer findings, different review-loop iterations produce honest divergence. The instructor's repo is a *reference*, not a *spec*.
 
 ## Audience
 
@@ -21,7 +27,7 @@ This document is iterated each session: status flips, links to the merged PRs la
 2. **Mind-vault is the harness; Django is the payload.** Each session uses the workflow to deliver a Django concept. Students leave knowing *both* better.
 3. **Real findings beat curated examples.** When something breaks in verification (as it did with `.env.template` during IDEA-001), surface it, fix it in the same PR, and use the failure as the teaching moment. Don't sanitise the trajectory.
 4. **PHP → Django translations are explicit.** Every Django concept gets a short "in Symfony this would be X" / "Laravel does this with Y" anchor when one exists.
-5. **No solo sessions.** Instructor drives the workflow; students debate decisions, vote on open questions, take turns dispatching personas.
+5. **No solo sessions.** Instructor drives the canonical workflow; students debate decisions, vote on open questions, take turns dispatching personas in their own forks.
 
 ## Pre-requisites checklist
 
@@ -31,9 +37,8 @@ Before Session 1:
 - `git` configured with name + email
 - GitHub account + `gh` CLI authenticated
 - Claude Code installed with mind-vault skills accessible
-- This repo cloned, `.env` from `.env.template`, `make up` successful, `curl http://localhost/health/` → 200
 
-Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students see one complete sprint before they live one.
+Session 1 walks every student through repo bootstrap from scratch — nothing exists yet at session start.
 
 ---
 
@@ -41,64 +46,85 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 
 | Phase | Sessions | Theme |
 |---|---|---|
-| 0 — Onboarding | 0 (self-paced) | Read one shipped sprint end-to-end |
-| 1 — Stabilise & harden | 1 | nginx-served static + media routing |
-| 2 — Django ORM intro | 2, 3 | Custom User; then Project + Task models (admin-only) |
-| 3 — Polished UI foundation | 4, 5 | AI-assisted base template; then auth UI templates |
-| 4 — Domain CRUD UI | 6, 7, 8 | Project list CRUD; Kanban + Task CRUD; Task detail page |
+| 1 — Stabilise & harden | S1, S2 | Repo bootstrap + skeleton; nginx static/media routing |
+| 2 — Django ORM intro | S3, S4 | Custom User; then Project + Task models (admin-only) |
+| 3 — Polished UI foundation | S5, S6 | AI-assisted base template; then auth UI templates |
+| 4 — Domain CRUD UI | S7, S8, S9 | Project list CRUD; Kanban + Task CRUD; feature-rich Task detail page |
 
 ---
 
 ## Sessions
 
-### Session 0 — Onboarding (self-paced, ~30 min)
+### Session 1 — Repo bootstrap + first sprint end-to-end (PHASE 1 starts)
 
-**Status**: ✅ Available
+**Status**: ✅ Shipped — 2026-05-19
 
-**Goal**: Familiarise with the existing skeleton and one complete sprint trail.
+**Goal**: From an empty directory, ship a runnable Django stack via the full mind-vault sprint workflow. The session *itself* is the introduction to both Django and mind-vault — students experience capture-to-merge in one sitting.
 
-**Activities**:
-- Read `CLAUDE.md` end-to-end.
-- Walk `docs/archive/2026-05-idea-001-django-skeleton/` — IDEA → plan → devlog.
-- Trace one commit through `git show` and explain what each chunk delivered.
-- Run `make up && make migrate && make test`, hit `http://localhost/health/`.
+**IDEAs**:
+- **IDEA-001** — Django + Docker Compose Skeleton (✅ merged via PR #1)
+- **IDEA-002** — Static & Media Serving via nginx (📋 captured + planned, work pending in S2)
 
-**Mind-vault**: artefact taxonomy (IDEA, plan, devlog), `RULE_git-safety`, `RULE_self-sweep-before-push`.
+**What actually shipped (instructor's repo)**:
+- IDEA-001 end-to-end: capture → plan (with one /plan-time amendment on `apps/` → `tasker_django/`, one open-question resolution on nginx port 80, two mid-flight `.env.template` fixes) → work (8-commit execution sequence) → wrap → human merge.
+- IDEA-002 capture + plan + draft PR opened off a forward-synced branch — work-and-merge deferred to Session 2.
+- This roadmap document, opened as PR #3.
+- Repo state: Django 5.2.9 on Daphne behind nginx on host port 80, Postgres 16, Redis 7, `tasker_django.health` exposing `GET /health/` returning 200.
 
-**Django**: project vs app distinction, `manage.py`, `django-environ`, why a custom User is *not* there yet (foreshadow Session 2).
+**Django teaching moments covered**:
+- Project (`tasker/`) vs apps container (`tasker_django/`) — why named-by-project beats generic `apps/`.
+- `manage.py`, `settings.py`, `urls.py`, `asgi.py` — Symfony's `bin/console`, `config/`, routing equivalents.
+- `django-environ` for env-driven settings — closer to Symfony's `.env` than Laravel's `config/*.php`.
+- Daphne single-server ASGI — most Symfony/Laravel students have only seen PHP-FPM behind nginx; Daphne is similar in shape but Python-native and async-capable.
+- Smoke testing through the real nginx hop, not Django's in-process test client.
+
+**Mind-vault teaching moments covered**:
+- Five-stage workflow: `/idea` → `/plan` → `/work` → review (manual or `/<engine>-loop`) → `/wrap` → `/compound`.
+- `RULE_git-safety`: feature branches per IDEA, PRs target `main`, human merges.
+- `RULE_self-sweep-before-push`: pyflakes inside the dev container as a pre-push gate.
+- Forward-sync of an in-flight branch when its parent IDEA merges (demonstrated between PR #1 and PR #2).
+- "If verification fails, document the failure in the plan's Open Questions section before opening the PR" — surfaced live when `.env.template` dual-source-of-truth broke `make migrate`.
+
+**Outputs**:
+- PR #1 merged — repo skeleton on `main`
+- PR #2 open as draft — IDEA-002 plan ready, work pending
+- PR #3 open — this roadmap (iteration 1)
 
 ---
 
-### Session 1 — Static & media routing via nginx (PHASE 1)
+### Session 2 — Static & media routing via nginx (PHASE 1 closes)
 
-**Status**: 🚧 In progress — IDEA-002, PR #2 draft.
+**Status**: 🚧 Next — picks up IDEA-002 from PR #2.
 
-**Goal**: Run one full sprint, draft-plan → merge. Introduce nginx-level routing, volume sharing between containers, and the "smoke test through the real hop" pattern.
+**Goal**: Finish what S1 started for IDEA-002. Demonstrate the **second half** of a sprint when planning lives across two sessions — students pick up a plan they didn't author, execute it, and discover what's load-bearing in the plan and what isn't.
 
-**IDEAs (already captured)**: IDEA-002 — Static & Media Serving via nginx.
+**IDEAs**:
+- IDEA-002 — Static & Media Serving via nginx (work, review, wrap, merge).
 
 **Activities**:
-- Review IDEA-002 + plan together. Resolve open questions Q1–Q3 as a group.
+- Re-read IDEA-002's plan as a group; confirm Q1–Q3 resolutions still hold.
 - Flip plan `draft → ready`; run `/work`.
-- Watch smoke test pass live. Debug if it doesn't.
+- Watch the smoke test pass live. If it fails, treat the failure as the lesson.
 - Run review-loop (Bugbot or Copilot) if configured; manual review otherwise.
-- `/wrap` → merge PR #2 → `/compound`.
+- `/wrap` IDEA-002 → merge PR #2.
+- Run `/compound` on IDEA-001 + IDEA-002 — both have findings worth routing (`.env.template` dual-source-of-truth, Compose `$`-interpolation gotcha, "smoke test through the real hop" pattern).
 
-**Django**:
+**Django teaching moments**:
 - `STATIC_URL` vs `STATIC_ROOT` — why two? Symfony's `assets:install` is the rough analogue; Laravel uses Vite.
 - `collectstatic` mechanics; manifest vs filesystem finders.
-- Why Django *itself* shouldn't serve static in production (and why `runserver` does anyway).
+- Why Django *itself* shouldn't serve static in production (and why `runserver` does anyway, masking the problem).
 
-**Mind-vault**:
-- Forward-syncing a feature branch after a parent IDEA merges (we demonstrated this between IDEA-001 → IDEA-002 already).
-- "Smoke test through the real hop" vs in-process test clients — pattern recurs.
-- `/wrap` pre-merge sweep mechanics.
+**Mind-vault teaching moments**:
+- "Picking up another session's plan" — the plan is a *contract*; if it's wrong, route back to `/plan`, don't paper over it.
+- `/<engine>-loop` semantics — review bot finds something; you triage; you fix; you push; it re-reviews.
+- `/wrap` pre-merge sweep mechanics — index, devlog, downstream-docs grep.
+- `/compound` routing — project-local solution doc vs mind-vault rule/skill vs auto-memory.
 
-**Outputs**: PR #2 merged. IDEA-002 in `## ✅ References — Implemented`. Devlog entry appended.
+**Outputs**: PR #2 merged. IDEA-002 in `## ✅ References — Implemented`. Devlog appended. Mind-vault gains entries for any compound-routed findings.
 
 ---
 
-### Session 2 — Custom User model (PHASE 2 starts)
+### Session 3 — Custom User model (PHASE 2 starts)
 
 **Status**: 📋 Planned
 
@@ -113,13 +139,13 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 - Show `manage.py sqlmigrate` to expose the actual SQL.
 - Register a `UserAdmin` subclass; show admin list/search/filter wiring.
 
-**Django**:
+**Django teaching moments**:
 - `AbstractUser` vs `AbstractBaseUser` — when to extend which.
 - Migrations: Django auto-generation vs Doctrine `make:migration`. Show what auto-generated migrations actually look like.
 - The "custom User on day one" rule — *why* it's painful to retrofit later (every FK to `auth.User` would need re-pointing).
 - `LOGIN_URL`, `LOGIN_REDIRECT_URL` — set the dials early.
 
-**Mind-vault**:
+**Mind-vault teaching moments**:
 - `AGENT_architect` reviewer pass — mandatory for high-blast-radius decisions.
 - Open-questions discipline — when a Q's default is wrong for *this* project's context.
 
@@ -127,7 +153,7 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 
 ---
 
-### Session 3 — Project + Task models (PHASE 2 continued)
+### Session 4 — Project + Task models (PHASE 2 closes)
 
 **Status**: 📋 Planned
 
@@ -145,7 +171,7 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 - Show `Count('tasks', filter=Q(tasks__status='open'))` for an annotated open-task count column.
 - Inline `Task` editing inside `ProjectAdmin` via `TabularInline`.
 
-**Django**:
+**Django teaching moments**:
 - `ForeignKey(on_delete=...)` — `CASCADE` vs `SET_NULL` vs `PROTECT`. PHP frameworks defer this to DB; Django moves it into Python.
 - `__str__`, `Meta.ordering` defaults.
 - `TextChoices` / `IntegerChoices` — proper enums in Django 5.
@@ -153,7 +179,7 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 - `related_name`, `related_query_name`, when to set them.
 - Composite indexes + `UniqueConstraint`.
 
-**Mind-vault**:
+**Mind-vault teaching moments**:
 - Two IDEAs in one session — when it works (shared domain, tight coupling) and when it doesn't.
 - Parallel worktrees demo (optional, if cohort wants depth on the isolation contract).
 
@@ -161,7 +187,7 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 
 ---
 
-### Session 4 — AI-assisted base template (PHASE 3 starts)
+### Session 5 — AI-assisted base template (PHASE 3 starts)
 
 **Status**: 📋 Planned
 
@@ -176,14 +202,14 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 - Plan should include a `block content`, `block title`, `block extra_head`, `block extra_scripts` contract — the dial-in points every later template uses.
 - Write a renders-without-crashing template test for `base.html` via a tiny placeholder view.
 
-**Django**:
+**Django teaching moments**:
 - Template inheritance: `{% extends %}`, `{% block %}` — closest cousin is Twig in Symfony; Laravel Blade is similar.
-- `{% load static %}` and how that ties back to Session 1's nginx work.
+- `{% load static %}` and how that ties back to Session 2's nginx work.
 - `{% url %}` reverse routing.
 - Context processors (mention; don't implement — earned later).
 - DRY templates without sacrificing readability.
 
-**Mind-vault**:
+**Mind-vault teaching moments**:
 - `frontend-design` skill — when to invoke it; how to evaluate its output critically.
 - "Generative content" IDEAs — the artefact is partly authored by the AI; the IDEA's success criteria become "the output passes this rubric".
 
@@ -191,11 +217,11 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 
 ---
 
-### Session 5 — Auth UI: registration + login + password-change (PHASE 3 continued)
+### Session 6 — Auth UI: registration + login + password-change (PHASE 3 closes)
 
 **Status**: 📋 Planned
 
-**Goal**: Wire user-facing authentication — registration, login, logout, password change — using Django's built-in views + templates extending the Session-4 base.
+**Goal**: Wire user-facing authentication — registration, login, logout, password change — using Django's built-in views + templates extending the Session-5 base.
 
 **IDEAs to capture**: one IDEA for the four auth flows, all template-driven.
 
@@ -206,21 +232,21 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 - Decision: `@login_required` everywhere by default or per-view? Debate, write a default, document.
 - Tests: anonymous user can register → logs in automatically; logged-in user can change password and the new password works on the next login; logout actually logs out.
 
-**Django**:
+**Django teaching moments**:
 - Built-in auth views — Symfony's Security bundle requires bootstrap; Laravel Breeze/Jetstream are the rough parallel.
 - `UserCreationForm` and how to customise it (we'll need to subclass since we have a custom User).
 - `LOGIN_URL`, `LOGIN_REDIRECT_URL`, `LOGOUT_REDIRECT_URL` settings.
 - CSRF behaviour: how the middleware works, what `{% csrf_token %}` injects, why AJAX needs the header.
 - Message framework — `django.contrib.messages` for "you've registered!" toasts.
 
-**Mind-vault**:
+**Mind-vault teaching moments**:
 - The "use the framework's built-ins until they break" rule — applies to Django auth, Symfony security, every mature framework. Don't reach for django-allauth until you've outgrown built-ins.
 
-**Outputs**: PR merged. Users can register, log in, log out, change passwords. Tests cover each flow. The nav from Session 4 now links to live URLs.
+**Outputs**: PR merged. Users can register, log in, log out, change passwords. Tests cover each flow. The nav from Session 5 now links to live URLs.
 
 ---
 
-### Session 6 — Project list CRUD (PHASE 4 starts)
+### Session 7 — Project list CRUD (PHASE 4 starts)
 
 **Status**: 📋 Planned
 
@@ -236,7 +262,7 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 - Pagination via `ListView.paginate_by` — show how default ordering matters here.
 - Tests: anonymous → 302 to login; user A can't see/edit/delete user B's projects (security test, not just functional test).
 
-**Django**:
+**Django teaching moments**:
 - Class-based views vs function-based — when each shines. (PHP world: closer to Symfony controllers than Laravel function-style routes.)
 - `LoginRequiredMixin`, `UserPassesTestMixin`, `PermissionRequiredMixin`.
 - `ModelForm` auto-generation; `fields = [...]` vs `exclude = [...]`.
@@ -244,7 +270,7 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 - `get_success_url()` and `reverse_lazy`.
 - Django messages on create/update/delete.
 
-**Mind-vault**:
+**Mind-vault teaching moments**:
 - Security-test-first habit: write the "user A can't access user B's data" assertion *before* the view exists. This is `superpowers:test-driven-development` applied to authz.
 - Ownership-scoping as a project pattern worth `/compound`-ing to `docs/solutions/` once it solidifies.
 
@@ -252,7 +278,7 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 
 ---
 
-### Session 7 — Project Kanban + Task CRUD (PHASE 4 continued)
+### Session 8 — Project Kanban + Task CRUD (PHASE 4 continued)
 
 **Status**: 📋 Planned
 
@@ -270,13 +296,13 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 - Drag-to-change-status — stretch (can be its own IDEA if time runs short).
 - Tests: status grouping correct, can create/edit/delete tasks, cross-user authz still holds.
 
-**Django**:
+**Django teaching moments**:
 - Template partials (`include`, custom inclusion tags) — Twig and Blade have direct parallels.
 - View returning a *partial* (just a `<tr>` or `<div>`) vs a full page — Django doesn't care; the framework is HTTP-aware all the way down.
 - Form processing in CBVs vs FBVs for HTMX-friendly responses.
 - `django-htmx` package (or `django.contrib.htmx` — depending on what's current at session time).
 
-**Mind-vault**:
+**Mind-vault teaching moments**:
 - `django-frontend` skill applied — HTMX partial-response contract, Alpine.js state shape, Bulma component primitives.
 - `mobile-ux-polish` skill if drag-and-drop lands — touch vs mouse drag discrimination.
 - Two-IDEA session where the second depends on the first — when to ship as one PR vs two.
@@ -285,7 +311,7 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 
 ---
 
-### Session 8 — Feature-rich Task detail page (PHASE 4 closes)
+### Session 9 — Feature-rich Task detail page (PHASE 4 closes)
 
 **Status**: 📋 Planned
 
@@ -294,31 +320,31 @@ Session 0 (self-paced, ~30 min) walks the existing IDEA-001 archive so students 
 **IDEAs to capture** (pick a coherent subset together — full list is over-ambitious for one session):
 - Comments on a task (separate model, FK to task + author).
 - Activity log (signal-driven, records assignee/status/priority changes).
-- File attachments (FK to task, uses media routing from Session 1).
+- File attachments (FK to task, uses media routing from Session 2).
 - "Due soon" indicator on the task list (today/this-week/overdue badges).
 
 **Activities**:
 - Ideate the *minimum viable* set with the cohort. Pin scope before plan.
 - For activity log: Django signals (`post_save` on Task) — show why signals can be a debugging nightmare (run order, recursion, hidden side effects).
 - For comments: a fresh app `tasker_django.comments` with a `Comment` model linked to `Task`. If we generalise to "comments on anything", introduce generic FKs — but only if the cohort wants that depth.
-- For attachments: revisit Session 1's `/media/` route — *now* it goes live. `FileField` + `upload_to` lambdas + safety considerations.
+- For attachments: revisit Session 2's `/media/` route — *now* it goes live. `FileField` + `upload_to` lambdas + safety considerations.
 - Tests per feature subset.
 
-**Django**:
+**Django teaching moments**:
 - Django signals — when they're great (decoupling), when they're a footgun (untraceable side effects).
 - Generic relations (`contenttypes.GenericForeignKey`) — covered only if comments-on-anything is in scope.
 - `FileField`, `ImageField`, `upload_to`, `MEDIA_ROOT`/`MEDIA_URL`.
 - Storage backends (mention S3/MinIO as future options — don't implement).
 
-**Mind-vault**:
-- Scope-pinning discipline — Session 8 is the most over-scopable session in this roadmap. Use `/plan`'s open-questions section to *say no* to features.
+**Mind-vault teaching moments**:
+- Scope-pinning discipline — Session 9 is the most over-scopable session in this roadmap. Use `/plan`'s open-questions section to *say no* to features.
 - `/compound` value compounds: every Django pattern learned earlier collapses time on this session.
 
-**Outputs**: PR(s) merged. Task detail page does materially more than Session 7's inline edit.
+**Outputs**: PR(s) merged. Task detail page does materially more than Session 8's inline edit.
 
 ---
 
-## Beyond Session 8 — backlog seeds
+## Beyond Session 9 — backlog seeds
 
 These are *candidate* themes if the cohort wants follow-on sessions (capture as IDEAs only when committed):
 
@@ -340,9 +366,9 @@ These are *candidate* themes if the cohort wants follow-on sessions (capture as 
 
 This file is owned by **whoever wraps the most recent session**:
 
-- After each session's `/wrap`, flip the session's `Status:` line.
+- After each session's `/wrap`, flip the session's `Status:` line and date-stamp.
 - Append a one-line "what actually shipped" note linking the merged PRs.
-- Update "Beyond Session 8" if any candidate IDEAs were captured but deferred.
+- Update "Beyond Session 9" if any candidate IDEAs were captured but deferred.
 - The `Outputs` line for each session becomes a permanent record once the session has run.
 
 If a session unexpectedly grows or shrinks (a student question opens a tangent, a finding demands its own IDEA), update the roadmap **before** the next session — keeps expectations aligned across the cohort.
