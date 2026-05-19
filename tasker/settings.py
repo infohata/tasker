@@ -21,8 +21,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Local apps (registered as the tasker_django.* namespace lands):
-    # "tasker_django.health",
+    "tasker_django.health",
 ]
 
 MIDDLEWARE = [
