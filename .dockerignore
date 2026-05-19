@@ -1,0 +1,45 @@
+.git
+.gitignore
+.gitattributes
+
+# Secrets
+.env
+.env.*
+!.env.template
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.egg-info
+.Python
+.eggs
+
+# Virtual envs
+.venv
+venv
+env
+
+# Tests / coverage
+.pytest_cache
+.coverage
+.coverage.*
+htmlcov
+.tox
+.mypy_cache
+.ruff_cache
+
+# Docs / IDE / OS
+docs
+.idea
+.vscode
+*.swp
+.DS_Store
+
+# Compose overrides
+docker-compose.override.yml
+
+# Build artefacts
+build
+dist
