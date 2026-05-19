@@ -100,9 +100,9 @@ This is also the first end-to-end exercise of the mind-vault sprint workflow aga
 - **`tasker_django/` as the apps container; `tasker_django.health` as the first inhabitant.** Named-by-project (not generic `apps/`) — keeps the layout readable when grepping or browsing, and dodges visual confusion with Django's internal `django.apps`. Avoids the empty-package smell, exercises the import path (`INSTALLED_APPS = ["tasker_django.health", ...]`), and gives the smoke test a real view to target.
 - **Settings driven by `django-environ`.** Single `tasker/settings.py`, all secrets and connection strings via `env(...)`. Multi-file settings split happens when staging/prod divergence forces it, not pre-emptively.
 - **Postgres 16, Redis 7.** Current LTS-ish lines as of 2026-05; both via official docker images pinned to major versions, not `latest`.
-- **nginx serves the user-facing port; web container exposes only to the internal docker network.** Mirrors prod, surfaces any proxy_pass quirks early. nginx host port is `8080` to avoid colliding with a possibly-installed system nginx on `:80`.
+- **nginx serves the user-facing port; web container exposes only to the internal docker network.** Mirrors prod, surfaces any proxy_pass quirks early. nginx host port is `80` (resolved Q2 — user opted for prod parity over collision-avoidance).
 - **One `compose.yml`, no `docker-compose.override.yml` in git.** The override file is gitignored (already covered in root `.gitignore`); local-only customisations belong there.
-- **Smoke test via `pytest-django` + `Client`, NOT live HTTP through nginx.** The pytest run is in-container against Django directly — testing the framework wiring, not nginx config. A manual `curl http://localhost:8080/health/` is the verification step that exercises the nginx hop.
+- **Smoke test via `pytest-django` + `Client`, NOT live HTTP through nginx.** The pytest run is in-container against Django directly — testing the framework wiring, not nginx config. A manual `curl http://localhost/health/` is the verification step that exercises the nginx hop.
 - **Requirements pinning style.** `~=` (compatible-release) for top-level deps to allow patch updates; later Dependabot IDEAs can tighten to exact pins or stay loose — decision deferred.
 - **No `BaseModel` abstraction here.** It belongs in the first domain-modelling IDEA where it actually has a consumer. Adding it now would be speculative per CLAUDE.md "no over-engineering".
 
@@ -111,9 +111,9 @@ This is also the first end-to-end exercise of the mind-vault sprint workflow aga
 - **Q1. Should `django-channels` be installed in base requirements now or deferred?**
   - **Default:** Deferred. Daphne serves plain ASGI Django; Channels adds when a WS feature lands.
   - **Trade-off:** Deferring keeps the dep tree minimal but means later IDEAs add Channels + run migrations for `django_channels`. Installing now front-loads that cost but adds a dep with no current consumer.
-- **Q2. nginx host port — `8080` or `80`?**
-  - **Default:** `8080`. Avoids needing sudo or colliding with host nginx.
-  - **Trade-off:** Less faithful to prod (which uses 80/443) but safer for any dev machine.
+- **Q2. nginx host port — `8080` or `80`?** _Resolved: `80`._
+  - **Resolution:** Bind nginx to host `:80` for prod parity. User accepts the requirement that no other service (system nginx, apache) holds `:80`, and that docker can bind privileged ports (default on Linux with the docker daemon running as root).
+  - **Trade-off accepted:** Maximum dev/prod fidelity; if a collision surfaces on a given machine, override locally via `docker-compose.override.yml` (gitignored).
 - **Q3. `tasker_django.health` — keep as a permanent diagnostic app or absorb the `/health/` view into the project `urls.py` later?**
   - **Default:** Keep. `/health/` is a legit ops surface (k8s probes, monitoring) and `tasker_django.health` is a natural home for future readiness/liveness expansion.
   - **Trade-off:** Slight ceremony for a one-view app, but the alternative (a view in `tasker.urls`) blurs the project/apps boundary the layout is trying to establish.
@@ -129,7 +129,7 @@ Branch `feature/idea-001-django-skeleton` already exists with the kickoff commit
 2. **`chore(docker)`** — `Dockerfile`, `.dockerignore`, `requirements/base.txt`, `requirements/dev.txt`, `.python-version`. Does NOT yet wire compose.
 3. **`chore(compose)`** — `compose.yml` (web/db/redis/nginx), `nginx/default.conf`, `.env.template`. `make up` works after this commit but `web` will error until step 4 lands `manage.py`.
 4. **`feat(django)`** — `tasker/` package (`__init__.py`, `settings.py`, `urls.py`, `asgi.py`, `wsgi.py`) + `manage.py` + `tasker_django/__init__.py`. Django boots; `manage.py check` is green.
-5. **`feat(health)`** — `tasker_django/health/` (apps.py, urls.py, views.py with `health_view` returning `JsonResponse({"status": "ok"})`), wire into `tasker.urls`. `curl http://localhost:8080/health/` returns 200.
+5. **`feat(health)`** — `tasker_django/health/` (apps.py, urls.py, views.py with `health_view` returning `JsonResponse({"status": "ok"})`), wire into `tasker.urls`. `curl http://localhost/health/` returns 200.
 6. **`test(smoke)`** — `pytest.ini`, `tasker_django/health/tests/__init__.py`, `tasker_django/health/tests/test_health.py`. `make test` runs and passes.
 7. **`chore(make)`** — `Makefile` with `up`, `down`, `shell`, `test`, `migrate`, `makemigrations`, `logs`. Replaces any raw `docker compose` invocations from earlier commits where applicable in the plan's docs.
 8. **`docs(claude)`** — update `CLAUDE.md` Commands + "What lives where" sections from "planned" to actual; remove the pre-scaffolding status banner.
@@ -186,7 +186,7 @@ services:
     image: redis:7
   nginx:
     image: nginx:alpine
-    ports: ["8080:80"]
+    ports: ["80:80"]
     volumes: ["./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro"]
     depends_on: [web]
 volumes:
@@ -214,7 +214,7 @@ After step 8, all of the following must be green:
 - `make up` — stack boots, no restart loops in `docker compose ps`.
 - `make migrate` — applies Django built-in migrations against fresh Postgres, exit 0.
 - `make test` — pytest finds and passes the `/health/` smoke test.
-- `curl -s http://localhost:8080/health/` — returns `{"status": "ok"}` with HTTP 200 (exercises the nginx → web hop).
+- `curl -s http://localhost/health/` — returns `{"status": "ok"}` with HTTP 200 (exercises the nginx → web hop).
 - `docker compose exec -T web python -m pyflakes tasker_django/ tasker/` — clean (self-sweep gate).
 - `make down` — `docker compose ps` empty, no orphan containers, named volume preserved.
 - `git log --oneline feature/idea-001-django-skeleton ^main` shows the commit sequence from step 1–8.
