@@ -1,7 +1,7 @@
 ---
 id: 001
 title: Django + Docker Compose Skeleton
-status: idea          # idea | in-progress | complete | superseded
+status: in-progress   # idea | in-progress | complete | superseded
 priority: high   # high | medium | low
 supersedes: []       # list of IDEA ids this replaces, or []
 superseded_by: null
@@ -20,7 +20,7 @@ sensitive_paths_cleared_reason: "Lands docker-compose.yml, nginx config, Dockerf
 
 # IDEA-001: Django + Docker Compose Skeleton
 
-**Status**: 💡 Idea
+**Status**: 🚧 In Progress
 **Priority**: High
 
 **Problem** (or opportunity): The `tasker` repo is empty. Nothing can be planned, worked, reviewed, or shipped until a runnable Django stack exists. Until then the mind-vault workflow has nothing to bite on.
