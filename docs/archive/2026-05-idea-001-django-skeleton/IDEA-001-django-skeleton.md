@@ -1,14 +1,14 @@
 ---
 id: 001
 title: Django + Docker Compose Skeleton
-status: in-progress   # idea | in-progress | complete | superseded
+status: complete      # idea | in-progress | complete | superseded
 priority: high   # high | medium | low
 supersedes: []       # list of IDEA ids this replaces, or []
 superseded_by: null
 depends_on: []       # list of IDEA ids required before starting, or []
 related: []             # list of IDEA ids that share context, or []
 created: 2026-05-19
-completed: null
+completed: 2026-05-19
 # Sprint-auto eligibility gates — both must be `true` with explicit reasoning
 # before sprint-auto can run this idea unattended overnight.
 # Default to `false` at capture; upgrade in `/plan` once the unknowns are nailed down.
@@ -20,7 +20,7 @@ sensitive_paths_cleared_reason: "Lands docker-compose.yml, nginx config, Dockerf
 
 # IDEA-001: Django + Docker Compose Skeleton
 
-**Status**: 🚧 In Progress
+**Status**: ✅ Complete (2026-05-19, PR #1)
 **Priority**: High
 
 **Problem** (or opportunity): The `tasker` repo is empty. Nothing can be planned, worked, reviewed, or shipped until a runnable Django stack exists. Until then the mind-vault workflow has nothing to bite on.

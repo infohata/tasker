@@ -5,7 +5,7 @@ _Two locations per RULE_ideas-location-status: `docs/ideas/` = backlog;
 
 ## 🚧 In Progress
 
-- [IDEA-001](../archive/2026-05-idea-001-django-skeleton/IDEA-001-django-skeleton.md) ⏳ — Django + Docker Compose Skeleton
+_(none)_
 
 ## 💡 High Priority (backlog)
 
@@ -25,4 +25,7 @@ _(none)_
 
 ## ✅ References — Implemented
 
-_(none)_
+### IDEA-001: Django + Docker Compose Skeleton ✅ COMPLETE
+
+**Status**: ✅ **COMPLETE** · **Completed**: 2026-05-19 · **See**: [Archive](../archive/2026-05-idea-001-django-skeleton/IDEA-001-django-skeleton.md), [PR #1](https://github.com/infohata/tasker/pull/1).
+Shipped the minimum runnable Django stack: Django 5.2.9 on Daphne ASGI behind nginx, Postgres 16 + Redis 7, `tasker/` project package + `tasker_django/` apps container (first inhabitant `tasker_django.health` exposing `GET /health/`). Verified end-to-end via `make up`, `make migrate` (18 built-in migrations applied), `make test` (2/2 pass), and `curl localhost/health/` (200 + correct body). Two mid-flight fixes rolled into the same PR: `.env.template` reduced to a single source of truth for DB credentials (compose interpolates `DATABASE_URL` from `POSTGRES_*` to prevent password drift), and a `$$`-escape note for `.env` values (Docker Compose silently interpolates `$VAR` references inside `env_file` values). Dogfooded the full mind-vault sprint workflow from commit zero.
