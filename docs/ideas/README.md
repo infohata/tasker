@@ -13,7 +13,7 @@ _(none)_
 
 ## 💡 Medium Priority (backlog)
 
-_(none)_
+- [IDEA-002](IDEA-002-static-routing-nginx.md) — Static & Media Serving via nginx
 
 ## 💡 Low Priority (backlog)
 
