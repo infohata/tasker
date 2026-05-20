@@ -65,7 +65,7 @@ This IDEA sets the static-serving convention every later UI IDEA inherits, so it
 ### Existing code and patterns to reuse
 
 - `nginx/default.conf` (IDEA-001) — current single `location /` block. Add new locations BEFORE the catch-all so nginx matches `/static/` and `/media/` first.
-- `tasker/settings.py` (IDEA-001) — `STATIC_URL = "static/"`, `STATIC_ROOT = BASE_DIR / "static_collected"`. No changes needed here; matches the path topology nginx will serve from.
+- `tasker/settings.py` (IDEA-001) — `STATIC_URL`, `STATIC_ROOT = BASE_DIR / "static_collected"`. **Amendment (during /work):** flipped `STATIC_URL` from `"static/"` (relative) to `"/static/"` (leading slash) so browser-resolved admin asset URLs are absolute regardless of the current request path — otherwise the test client's `/static/...` and Django-rendered relative URLs disagree. Matches the path topology nginx will serve from.
 - `compose.yml` (IDEA-001) — existing volume `- .:/app` on `web` already exposes `static_collected/`; we just need to also expose it to nginx.
 - `Makefile` — existing pattern (`migrate`, `makemigrations`) is the template for the new `collectstatic` target.
 
