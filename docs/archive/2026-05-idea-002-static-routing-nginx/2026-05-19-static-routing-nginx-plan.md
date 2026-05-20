@@ -123,19 +123,24 @@ Branch `feature/idea-002-static-routing-nginx` already exists off `origin/main`.
 location /static/ {
     alias /srv/static/;
     autoindex off;
-    expires 1d;
-    add_header Cache-Control "public";
+    # No `always` — keep Cache-Control off 404s so missing files
+    # aren't cached by shared proxies.
+    add_header Cache-Control "public, max-age=86400";
     try_files $uri =404;
 }
 
 location /media/ {
     alias /srv/media/;
     autoindex off;
-    expires 1d;
-    add_header Cache-Control "public";
+    # User uploads are publicly accessible at this stage (no auth on
+    # /media/). `private` is a caching directive — shared proxies
+    # won't store the response — not an access-control mechanism.
+    add_header Cache-Control "private, max-age=86400";
     try_files $uri =404;
 }
 ```
+
+> **Amendment (during /work + Copilot review cycles):** the original sketch used `expires 1d; add_header Cache-Control "public";`. Copilot flagged the duplicate Cache-Control headers + the broader caching of 404s implied by `always`. The shipped config consolidates into a single `Cache-Control` header per location, drops `expires`, and uses `private` for `/media/` so shared caches don't store per-user uploads.
 
 **`compose.yml`** additions (services.web.volumes + services.nginx.volumes):
 
