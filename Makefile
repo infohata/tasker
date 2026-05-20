@@ -1,4 +1,4 @@
-.PHONY: help up down build rebuild shell test migrate makemigrations logs ps clean self-sweep
+.PHONY: help up down build rebuild shell test migrate makemigrations manage logs ps clean self-sweep
 
 DC := docker compose
 
@@ -31,6 +31,9 @@ migrate: ## Apply Django migrations
 
 makemigrations: ## Create migrations from model changes
 	$(DC) exec web python manage.py makemigrations
+
+manage: ## Run a manage.py subcommand: make manage ARGS="shell" (or createsuperuser, dbshell, …)
+	$(DC) exec web python manage.py $(ARGS)
 
 logs: ## Tail logs for all services
 	$(DC) logs -f
