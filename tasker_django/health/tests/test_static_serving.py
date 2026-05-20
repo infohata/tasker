@@ -23,9 +23,13 @@ def _collected_static():
 def test_nginx_serves_admin_static():
     with urlopen("http://nginx/static/admin/css/base.css", timeout=5) as resp:
         body = resp.read()
+        cache_control = resp.headers.get("Cache-Control")
 
     assert resp.status == 200
     assert body, "expected non-empty static file body"
+    # Lock in the cache policy so config changes that drop / weaken it
+    # show up here instead of as silent prod cache behaviour drift.
+    assert cache_control == "public, max-age=86400", cache_control
 
 
 def test_nginx_returns_404_for_missing_media():
@@ -38,6 +42,13 @@ def test_nginx_returns_404_for_missing_media():
     except HTTPError as exc:
         try:
             assert exc.code == 404
+            # Cache-Control must NOT be present on the 404 (achieved by
+            # omitting `always` from the add_header directive). Asserting
+            # absence here means a future change re-introducing `always`
+            # — and thereby caching 404s for a day — fails this test.
+            assert exc.headers.get("Cache-Control") is None, exc.headers.get(
+                "Cache-Control"
+            )
         finally:
             exc.close()
     else:
