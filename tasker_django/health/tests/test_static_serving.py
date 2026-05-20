@@ -36,7 +36,10 @@ def test_nginx_returns_404_for_missing_media():
     try:
         resp = urlopen(url, timeout=5)
     except HTTPError as exc:
-        assert exc.code == 404
+        try:
+            assert exc.code == 404
+        finally:
+            exc.close()
     else:
         resp.close()
         raise AssertionError("expected HTTP 404 for missing media file")
