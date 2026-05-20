@@ -1,4 +1,4 @@
-.PHONY: help up down build rebuild shell test migrate makemigrations collectstatic logs ps clean self-sweep
+.PHONY: help up down build rebuild shell test migrate makemigrations manage collectstatic logs ps clean self-sweep
 
 DC := docker compose
 
@@ -31,6 +31,9 @@ migrate: ## Apply Django migrations
 
 makemigrations: ## Create migrations from model changes
 	$(DC) exec web python manage.py makemigrations
+
+manage: ## Run a manage.py subcommand: make manage ARGS="shell" (or createsuperuser, dbshell, …)
+	$(DC) exec web python manage.py $(ARGS)
 
 collectstatic: ## Collect static files into static_collected/ (served by nginx)
 	$(DC) exec -T web python manage.py collectstatic --noinput
