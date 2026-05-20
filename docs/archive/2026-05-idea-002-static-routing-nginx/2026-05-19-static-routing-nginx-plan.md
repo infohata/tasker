@@ -181,4 +181,4 @@ Skipping — scope is small (1 nginx config block + 1 compose mount + 1 Makefile
 
 ---
 
-**Status:** draft — awaiting user approval on Q1–Q3 (or accept defaults) before `/work` execution.
+**Status:** shipped — Q1–Q3 defaults accepted; six work commits landed on `feature/idea-002-static-routing-nginx`; verification green; PR #2 open for review.
