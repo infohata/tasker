@@ -3,7 +3,7 @@ stage: plan
 slug: static-routing-nginx
 created: 2026-05-19
 source: ./IDEA-002-static-routing-nginx.md
-status: draft
+status: ready
 project: tasker
 ---
 
