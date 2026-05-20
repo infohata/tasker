@@ -28,9 +28,11 @@ ENV/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-media/
+/media/*
+!/media/.gitkeep
 staticfiles/
-/static_collected/
+/static_collected/*
+!/static_collected/.gitkeep
 
 # --- Testing / coverage ---
 .pytest_cache/

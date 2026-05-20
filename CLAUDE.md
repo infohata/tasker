@@ -15,7 +15,7 @@ The primary purpose of this repo is to serve as a **testbed for the mind-vault w
 - Daphne ASGI — single server, no Gunicorn+Daphne split
 - PostgreSQL 16
 - Redis 7 (cache via `django-redis`; Channels layer when WebSockets land)
-- nginx (alpine) as the host-facing proxy on port `80`, mirroring prod
+- nginx (alpine) as the host-facing proxy on port `80`, mirroring prod — serves `/static/` and `/media/` directly from disk; everything else proxies to Daphne
 - Docker Compose for everything — no bare `docker` commands, no host-level installs
 - `django-environ` driving settings; `.env` is gitignored, `.env.template` is the contract
 
@@ -34,6 +34,7 @@ make shell           # bash in the web container
 make test            # run pytest inside web
 make migrate         # apply Django migrations
 make makemigrations  # create migrations from model changes
+make collectstatic   # collect static files into static_collected/ (served by nginx)
 make logs            # tail logs for all services
 make ps              # show running services
 make self-sweep      # pyflakes against project source (RULE_self-sweep-before-push)
